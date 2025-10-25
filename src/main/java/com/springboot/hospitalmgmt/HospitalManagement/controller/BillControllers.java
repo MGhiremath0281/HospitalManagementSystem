@@ -5,6 +5,7 @@ import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -15,23 +16,20 @@ public class BillControllers {
     @Autowired
     private BillService billService;
 
-    // Create new bill
     @PostMapping
     public ResponseEntity<Bill> createBill(@RequestBody Bill bill) {
         Bill savedBill = billService.saveBill(bill);
         return ResponseEntity.ok(savedBill);
     }
 
-    // Get all bills
     @GetMapping
     public ResponseEntity<Page<Bill>> getAllBills(
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "2") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size
     ) {
-        return ResponseEntity.ok(billService.getAllBills(page,size));
+        return ResponseEntity.ok(billService.getAllBills(page, size));
     }
 
-    // Get bill by ID
     @GetMapping("/{id}")
     public ResponseEntity<Bill> getBillById(@PathVariable Long id) {
         return billService.getBillById(id)
@@ -39,13 +37,11 @@ public class BillControllers {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get bills by patient ID
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<Bill>> getBillsByPatientId(@PathVariable Long patientId) {
         return ResponseEntity.ok(billService.getBillsByPatientId(patientId));
     }
 
-    // Update bill
     @PutMapping("/{id}")
     public ResponseEntity<Bill> updateBill(@PathVariable Long id, @RequestBody Bill bill) {
         return billService.getBillById(id)
@@ -59,7 +55,6 @@ public class BillControllers {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete bill
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBill(@PathVariable Long id) {
         if (billService.getBillById(id).isPresent()) {
