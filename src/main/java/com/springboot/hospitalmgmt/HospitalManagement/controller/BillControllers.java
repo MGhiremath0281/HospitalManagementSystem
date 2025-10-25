@@ -24,8 +24,11 @@ public class BillControllers {
 
     // Get all bills
     @GetMapping
-    public ResponseEntity<List<Bill>> getAllBills() {
-        return ResponseEntity.ok(billService.getAllBills());
+    public ResponseEntity<Page<Bill>> getAllBills(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "2") int size
+    ) {
+        return ResponseEntity.ok(billService.getAllBills(page,size));
     }
 
     // Get bill by ID
