@@ -10,8 +10,7 @@ import lombok.*;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Getter
-@Setter
+
 public class Apointment {
 
     @Id
@@ -20,4 +19,36 @@ public class Apointment {
     private Long patientId;
     private Long docterId;
     private String date;
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public Long getPatientId() {
+        return patientId;
+    }
+
+    public void setPatientId(Long patientId) {
+        this.patientId = patientId;
+    }
+
+    public Long getDocterId() {
+        return docterId;
+    }
+
+    public void setDocterId(Long docterId) {
+        this.docterId = docterId;
+    }
+
+    public String getDate() {
+        return date;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
 }
