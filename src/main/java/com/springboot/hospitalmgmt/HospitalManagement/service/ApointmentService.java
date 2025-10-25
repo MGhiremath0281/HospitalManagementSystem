@@ -4,6 +4,9 @@ import com.springboot.hospitalmgmt.HospitalManagement.models.Apointment;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.ApointmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
 import java.util.Optional;
@@ -20,8 +23,9 @@ public class ApointmentService {
     }
 
     // Get all appointments
-    public List<Apointment> getAllApointments() {
-        return apointmentRepository.findAll();
+    public Page<Apointment> getAllApointments(int page,int size) {
+        Pageable pageable = PageRequest.of(page,size);
+        return apointmentRepository.findAll(pageable);
     }
 
     // Get appointment by ID

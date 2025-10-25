@@ -4,7 +4,9 @@ import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.BillRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;      
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import java.util.List;
 import java.util.Optional;
 
@@ -20,8 +22,9 @@ public class BillService {
     }
 
     // Get all bills
-    public List<Bill> getAllBills() {
-        return billRepository.findAll();
+    public Page<Bill> getAllBills(int page,int size) {
+        Pageable pagable = PageRequest.of(page,size);
+        return billRepository.findAll(pagable);
     }
 
     // Get bill by ID

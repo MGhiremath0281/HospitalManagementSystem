@@ -5,6 +5,7 @@ import com.springboot.hospitalmgmt.HospitalManagement.service.ApointmentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.data.domain.Page;
 
 import java.util.List;
 
@@ -15,20 +16,20 @@ public class ApointmentController {
     @Autowired
     private ApointmentService apointmentService;
 
-    // Create new appointment
     @PostMapping
     public ResponseEntity<Apointment> createApointment(@RequestBody Apointment apointment) {
         Apointment savedApointment = apointmentService.saveApointment(apointment);
         return ResponseEntity.ok(savedApointment);
     }
 
-    // Get all appointments
     @GetMapping
-    public ResponseEntity<List<Apointment>> getAllApointments() {
-        return ResponseEntity.ok(apointmentService.getAllApointments());
+    public ResponseEntity<Page<Apointment>> getAllApointments(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "2") int size
+    ) {
+        return ResponseEntity.ok(apointmentService.getAllApointments(page, size));
     }
 
-    // Get appointment by ID
     @GetMapping("/{id}")
     public ResponseEntity<Apointment> getApointmentById(@PathVariable Long id) {
         return apointmentService.getApointmentById(id)
@@ -36,19 +37,16 @@ public class ApointmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Get appointments by patient ID
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<Apointment>> getApointmentsByPatientId(@PathVariable Long patientId) {
         return ResponseEntity.ok(apointmentService.getApointmentsByPatientId(patientId));
     }
 
-    // Get appointments by doctor ID
     @GetMapping("/docter/{docterId}")
     public ResponseEntity<List<Apointment>> getApointmentsByDocterId(@PathVariable Long docterId) {
         return ResponseEntity.ok(apointmentService.getApointmentsByDocterId(docterId));
     }
 
-    // Update appointment
     @PutMapping("/{id}")
     public ResponseEntity<Apointment> updateApointment(@PathVariable Long id, @RequestBody Apointment apointment) {
         return apointmentService.getApointmentById(id)
@@ -62,7 +60,6 @@ public class ApointmentController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Delete appointment
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteApointment(@PathVariable Long id) {
         if (apointmentService.getApointmentById(id).isPresent()) {
