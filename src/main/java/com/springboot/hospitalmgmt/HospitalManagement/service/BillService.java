@@ -23,8 +23,8 @@ public class BillService {
 
     // Get all bills
     public Page<Bill> getAllBills(int page,int size) {
-        Pageable pagable = PageRequest.of(page,size);
-        return billRepository.findAll(pagable);
+        Pagable Pagabl = PageRequest.of(page,size);    
+        return billRepository.findAll();
     }
 
     // Get bill by ID
