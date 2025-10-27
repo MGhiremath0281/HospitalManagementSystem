@@ -1,7 +1,7 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
-import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
+import com.springboot.hospitalmgmt.HospitalManagement.service.implementation.BillServiceimpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +14,7 @@ import java.util.List;
 public class BillControllers {
 
     @Autowired
-    private BillService billService;
+    private BillServiceimpl billService;
 
     @PostMapping
     public ResponseEntity<Bill> createBill(@RequestBody Bill bill) {
