@@ -4,6 +4,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 @Entity
@@ -16,8 +18,14 @@ public class Apointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @NotNull(message = "PAtient id can't be Empty")
     private Long patientId;
+
+    @NotNull(message = "Docter Id can't be Empty")
     private Long docterId;
+
+    @NotBlank(message = "Date can't be blank")
     private String date;
 
     public Long getId() {

@@ -2,6 +2,7 @@ package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
 import com.springboot.hospitalmgmt.HospitalManagement.models.Apointment;
 import com.springboot.hospitalmgmt.HospitalManagement.service.ApointmentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -24,7 +25,7 @@ public class ApointmentController {
 
     // Create / Update
     @PostMapping
-    public ResponseEntity<Apointment> save(@RequestBody Apointment apointment) {
+    public ResponseEntity<Apointment> save(@Valid @RequestBody Apointment apointment) {
         logger.info("Received request to save appointment for patient ID: {}", apointment.getPatientId());
         Apointment saved = apointmentService.saveApointment(apointment);
         logger.info("Appointment saved successfully with ID: {}", saved.getId());

@@ -2,6 +2,7 @@ package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.service.implementation.BillServiceimpl;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,7 +18,7 @@ public class BillControllers {
     private BillServiceimpl billService;
 
     @PostMapping
-    public ResponseEntity<Bill> createBill(@RequestBody Bill bill) {
+    public ResponseEntity<Bill> createBill(@Valid  @RequestBody Bill bill) {
         Bill savedBill = billService.saveBill(bill);
         return ResponseEntity.ok(savedBill);
     }
@@ -43,7 +44,7 @@ public class BillControllers {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Bill> updateBill(@PathVariable Long id, @RequestBody Bill bill) {
+    public ResponseEntity<Bill> updateBill(@PathVariable Long id,@Valid  @RequestBody Bill bill) {
         return billService.getBillById(id)
                 .map(existingBill -> {
                     existingBill.setPatientId(bill.getPatientId());

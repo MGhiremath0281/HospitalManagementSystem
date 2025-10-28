@@ -3,6 +3,7 @@ package com.springboot.hospitalmgmt.HospitalManagement.controller;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Docter;
 import com.springboot.hospitalmgmt.HospitalManagement.service.DocterService;
 
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class DocterController {
 
     // Create doctor
     @PostMapping
-    public ResponseEntity<Docter> createDocter(@RequestBody Docter docter) {
+    public ResponseEntity<Docter> createDocter(@Valid @RequestBody Docter docter) {
         Docter savedDocter = docterService.createDocter(docter);
         return ResponseEntity.ok(savedDocter);
     }
@@ -43,7 +44,7 @@ public class DocterController {
 
     // Update docter
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDocter(@PathVariable Long id, @RequestBody Docter docter) {
+    public ResponseEntity<?> updateDocter(@PathVariable Long id, @Valid @RequestBody Docter docter) {
         Docter updatedDocter = docterService.updateDocter(id, docter);
 
         if (updatedDocter == null) {
