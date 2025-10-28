@@ -6,7 +6,7 @@ import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 
 @RestController
@@ -18,7 +18,7 @@ public class PatientControllers {
 
     // Create Patient
     @PostMapping
-    public ResponseEntity<Patient> createPatient(@RequestBody Patient patient) {
+    public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient patient) {
         return ResponseEntity.ok(patientService.createPatient(patient));
     }
 
@@ -40,7 +40,7 @@ public class PatientControllers {
 
     // Update Patient
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id, @RequestBody Patient patient) {
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id,@Valid @RequestBody Patient patient) {
         Patient updatedPatient = patientService.updatePatient(id, patient);
         if (updatedPatient == null) {
             return ResponseEntity.notFound().build();
