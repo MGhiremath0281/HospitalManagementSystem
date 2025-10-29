@@ -44,12 +44,8 @@ public class ApointmentController {
     @GetMapping("/{id}")
     public ResponseEntity<Apointment> getById(@PathVariable Long id) {
         logger.info("Fetching appointment with ID: {}", id);
-        Optional<Apointment> apointment = apointmentService.getApointmentById(id);
-        return apointment.map(ResponseEntity::ok)
-                .orElseGet(() -> {
-                    logger.warn("Appointment not found with ID: {}", id);
-                    return ResponseEntity.notFound().build();
-                });
+        Apointment apointment = apointmentService.getApointmentById(id);
+        return  ResponseEntity.ok(apointment);
     }
 
     // Get By Patient

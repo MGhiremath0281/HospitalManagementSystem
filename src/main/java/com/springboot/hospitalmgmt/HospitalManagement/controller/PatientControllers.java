@@ -8,10 +8,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 @RestController
 @RequestMapping("/api/patients")
 public class PatientControllers {
+    private static final Logger logger = LoggerFactory.getLogger(PatientControllers.class);
 
     @Autowired
     private PatientService patientService;
@@ -33,9 +37,8 @@ public class PatientControllers {
     // Get Patient by ID
     @GetMapping("/{id}")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
-        return patientService.getPatientById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        logger.info("Fetching the  patient by id : {}",id);
+        return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
     // Update Patient
