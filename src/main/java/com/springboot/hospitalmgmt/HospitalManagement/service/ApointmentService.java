@@ -1,5 +1,6 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service;
 
+import com.springboot.hospitalmgmt.HospitalManagement.exceptions.AppointmentNotFoundException;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Apointment;
 import org.springframework.data.domain.Page;
 
@@ -11,7 +12,8 @@ public interface ApointmentService {
 
     Page<Apointment> getAllApointments(int page, int size);
 
-    Optional<Apointment> getApointmentById(Long id);
+    //changed return type from Optionl<Appontment> to Apointment and added throw clause
+    Apointment getApointmentById(Long id) throws AppointmentNotFoundException;
 
     List<Apointment> getApointmentsByPatientId(Long patientId);
 

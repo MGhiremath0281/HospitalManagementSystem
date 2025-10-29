@@ -1,5 +1,6 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
+import com.springboot.hospitalmgmt.HospitalManagement.exceptions.AppointmentNotFoundException;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Apointment;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.ApointmentRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.service.ApointmentService;
@@ -40,9 +41,10 @@ public class ApointmentServiceimpl implements ApointmentService {
     }
 
     @Override
-    public Optional<Apointment> getApointmentById(Long id) {
+    public Apointment getApointmentById(Long id) throws AppointmentNotFoundException {
         logger.info("Fetching appointment by ID: {}", id);
-        return apointmentRepository.findById(id);
+        return apointmentRepository.findById(id)
+                .orElseThrow(() ->new AppointmentNotFoundException(id));
     }
 
     @Override
@@ -60,7 +62,13 @@ public class ApointmentServiceimpl implements ApointmentService {
     @Override
     public void deleteApointment(Long id) {
         logger.warn("Deleting appointment with ID: {}", id);
+        apointmentRepository.findById(id)
+                        .orElseThrow(() -> {
+                            logger.error("can't delete - Apointment with ID : {} not found",id);
+                            return new AppointmentNotFoundException(id);
+                        });
         apointmentRepository.deleteById(id);
+        logger.info("Sucessfully deleted the Apointemnt with ID : {}",id);
     }
 
 }
