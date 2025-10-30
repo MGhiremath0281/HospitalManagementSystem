@@ -1,9 +1,13 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
+import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientRequestDTO;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Patient;
 import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -22,16 +26,16 @@ public class PatientControllers {
 
     // Create Patient
     @PostMapping
-    public ResponseEntity<Patient> createPatient(@Valid @RequestBody Patient patient) {
-        return ResponseEntity.ok(patientService.createPatient(patient));
+    public ResponseEntity<Patient> createPatient(@Valid @RequestBody PatientRequestDTO dto) {
+        return ResponseEntity.ok(patientService.createPatient(dto));
     }
 
     // Get All Patients with Pagination
     @GetMapping
-    public ResponseEntity<Page<Patient>> getAllPatients(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
-        return ResponseEntity.ok(patientService.getAllPatients(page, size));
+    public ResponseEntity<Page<PatientResponseDTO>> getAllPatients(
+            @PageableDefault(page = 0, size = 2, sort = "id") Pageable pageable) {
+        Page<PatientResponseDTO> patients = patientService.getAllPatients(pageable);
+        return ResponseEntity.ok(patients);
     }
 
     // Get Patient by ID
@@ -43,8 +47,8 @@ public class PatientControllers {
 
     // Update Patient
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id,@Valid @RequestBody Patient patient) {
-        Patient updatedPatient = patientService.updatePatient(id, patient);
+    public ResponseEntity<Patient> updatePatient(@PathVariable Long id,@Valid @RequestBody PatientRequestDTO dto) {
+        Patient updatedPatient = patientService.updatePatient(id, dto);
         if (updatedPatient == null) {
             return ResponseEntity.notFound().build();
         }
