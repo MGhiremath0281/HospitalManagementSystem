@@ -1,11 +1,16 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
+import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillRequestDTO;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillResponseDTO;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
 
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus; // Import HttpStatus for 201 response
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,21 +30,22 @@ public class BillController {
 
     // ✅ Create new bill
     @PostMapping
-    public ResponseEntity<Bill> createBill(@Valid @RequestBody Bill bill) {
-        logger.info("Creating new bill for patient ID: {}", bill.getPatientId());
-        Bill savedBill = billService.createBill(bill);
-        // MISTAKE CORRECTED: Use HttpStatus.CREATED (201) instead of ResponseEntity.ok() (200)
-        return new ResponseEntity<>(savedBill, HttpStatus.CREATED);
+    public ResponseEntity<BillResponseDTO> createBill(@Valid @RequestBody BillRequestDTO billRequestDTO) {
+        logger.info("Creating new bill for patient ID: {}", billRequestDTO.getPatientId());
+
+        BillResponseDTO responseDTO = billService.createBill(billRequestDTO);
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
+
 
     // ✅ Get all bills
     @GetMapping
-    public ResponseEntity<Page<Bill>> getAllBills(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "20") int size // Common default size is 20
-    ) {
-        logger.info("Fetching all bills with page={} and size={}", page, size);
-        Page<Bill> bills = billService.getAllBills(page, size);
+    public ResponseEntity<Page<BillResponseDTO>> getAllBills(
+            @PageableDefault(size = 10,page = 0)Pageable pageable
+            ) {
+        logger.info("Fetching all bills");
+        Page<BillResponseDTO> bills = billService.getAllBills(pageable);
         return ResponseEntity.ok(bills);
     }
 
@@ -60,11 +66,20 @@ public class BillController {
     }
 
     // ✅ Update existing bill
+    // Controller Layer
     @PutMapping("/{id}")
-    public ResponseEntity<Bill> updateBill(@PathVariable Long id, @Valid @RequestBody Bill bill) {
+    public ResponseEntity<BillResponseDTO> updateBill(
+            // Changed return type to DTO
+            @PathVariable Long id,
+            @Valid @RequestBody BillRequestDTO billRequestDTO) {
+
         logger.info("Updating bill with ID: {}", id);
-        Bill updatedBill = billService.updateBill(id, bill);
-        return ResponseEntity.ok(updatedBill);
+
+        // Corrected variable type to match the service return type
+        BillResponseDTO updatedBillDTO = billService.updateBill(id, billRequestDTO);
+
+        // Return the DTO in the response body with HTTP 200 OK
+        return ResponseEntity.ok(updatedBillDTO);
     }
 
     // ✅ Delete bill

@@ -28,21 +28,33 @@ public class PatientServiceImpl implements PatientService {
     // --- CRUD Operations ---
 
     @Override
-    public Patient createPatient(PatientRequestDTO dto) {
+    public PatientResponseDTO createPatient(PatientRequestDTO dto) {
         logger.info("Adding new patient: {}", dto.getName());
 
-        // Convert DTO to Entity
+        // 1. Convert DTO → Entity
         Patient patient = new Patient();
         patient.setName(dto.getName());
         patient.setGender(dto.getGender());
         patient.setAge(dto.getAge());
         patient.setEmail(dto.getEmail());
-        patient.setAdmissionDate(dto.getAdmissionDate()); // Assuming AdmissionDate is part of the DTO
+        patient.setAdmissionDate(dto.getAdmissionDate());
 
+        // 2. Save Entity → Database
         Patient savedPatient = patientRepository.save(patient);
         logger.info("Patient saved with ID: {}", savedPatient.getId());
-        return savedPatient; // Returns Entity
+
+        // 3. Convert Entity → Response DTO
+        PatientResponseDTO responseDTO = new PatientResponseDTO();
+        responseDTO.setId(savedPatient.getId());
+        responseDTO.setName(savedPatient.getName());
+        responseDTO.setGender(savedPatient.getGender());
+        responseDTO.setAge(savedPatient.getAge());
+        responseDTO.setEmail(savedPatient.getEmail());
+        responseDTO.setAdmissionDate(savedPatient.getAdmissionDate());
+
+        return responseDTO; // return the DTO
     }
+
 
     @Override
     public Page<PatientResponseDTO> getAllPatients(Pageable pageable) {
@@ -76,7 +88,7 @@ public class PatientServiceImpl implements PatientService {
     }
 
     @Override
-    public Patient updatePatient(Long id, PatientRequestDTO dto) {
+    public PatientResponseDTO updatePatient(Long id, PatientRequestDTO dto) {
         logger.info("Updating patient with ID: {}", id);
 
         Patient patient = patientRepository.findById(id)
@@ -93,9 +105,21 @@ public class PatientServiceImpl implements PatientService {
         patient.setAdmissionDate(dto.getAdmissionDate());
 
         Patient updatedPatient = patientRepository.save(patient);
+
         logger.info("Patient updated successfully with ID: {}", updatedPatient.getId());
-        return updatedPatient; // Returns Entity
+
+        // ✅ Convert Entity → DTO before returning
+        PatientResponseDTO responseDTO = new PatientResponseDTO();
+        responseDTO.setId(updatedPatient.getId());
+        responseDTO.setName(updatedPatient.getName());
+        responseDTO.setGender(updatedPatient.getGender());
+        responseDTO.setAge(updatedPatient.getAge());
+        responseDTO.setEmail(updatedPatient.getEmail());
+        responseDTO.setAdmissionDate(updatedPatient.getAdmissionDate());
+
+        return responseDTO;
     }
+
 
     @Override
     public void deletePatient(Long id) {
