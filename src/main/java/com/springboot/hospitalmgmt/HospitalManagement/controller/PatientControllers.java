@@ -8,6 +8,7 @@ import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -26,9 +27,11 @@ public class PatientControllers {
 
     // Create Patient
     @PostMapping
-    public ResponseEntity<Patient> createPatient(@Valid @RequestBody PatientRequestDTO dto) {
-        return ResponseEntity.ok(patientService.createPatient(dto));
+    public ResponseEntity<PatientResponseDTO> createPatient(@Valid @RequestBody PatientRequestDTO dto) {
+        PatientResponseDTO response = patientService.createPatient(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+
 
     // Get All Patients with Pagination
     @GetMapping
@@ -47,11 +50,12 @@ public class PatientControllers {
 
     // Update Patient
     @PutMapping("/{id}")
-    public ResponseEntity<Patient> updatePatient(@PathVariable Long id,@Valid @RequestBody PatientRequestDTO dto) {
-        Patient updatedPatient = patientService.updatePatient(id, dto);
-        if (updatedPatient == null) {
-            return ResponseEntity.notFound().build();
-        }
+    public ResponseEntity<PatientResponseDTO> updatePatient(
+            @PathVariable Long id,
+            @Valid @RequestBody PatientRequestDTO dto) {
+
+        PatientResponseDTO updatedPatient = patientService.updatePatient(id, dto);
+
         return ResponseEntity.ok(updatedPatient);
     }
 

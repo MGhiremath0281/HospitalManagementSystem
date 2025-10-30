@@ -7,9 +7,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface PatientService {
-    Patient createPatient(PatientRequestDTO dto);
+    PatientResponseDTO createPatient(PatientRequestDTO dto);
     Page<PatientResponseDTO> getAllPatients(Pageable pageable);
     Patient getPatientById(Long id);
-    Patient updatePatient(Long id, PatientRequestDTO dto);
+    PatientResponseDTO updatePatient(Long id, PatientRequestDTO dto);
     void deletePatient(Long id);
 }
