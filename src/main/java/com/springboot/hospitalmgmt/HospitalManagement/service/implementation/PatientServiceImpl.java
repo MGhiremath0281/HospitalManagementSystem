@@ -7,6 +7,8 @@ import com.springboot.hospitalmgmt.HospitalManagement.models.Patient;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.PatientRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
 
+import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.slf4j.Logger;
@@ -17,6 +19,9 @@ import org.springframework.stereotype.Service;
 public class PatientServiceImpl implements PatientService {
 
     private static final Logger logger = LoggerFactory.getLogger(PatientServiceImpl.class);
+
+    @Autowired
+    private ModelMapper modelMapper;
 
     private final PatientRepository patientRepository;
 
@@ -32,28 +37,18 @@ public class PatientServiceImpl implements PatientService {
         logger.info("Adding new patient: {}", dto.getName());
 
         // 1. Convert DTO → Entity
-        Patient patient = new Patient();
-        patient.setName(dto.getName());
-        patient.setGender(dto.getGender());
-        patient.setAge(dto.getAge());
-        patient.setEmail(dto.getEmail());
-        patient.setAdmissionDate(dto.getAdmissionDate());
+        Patient patient = modelMapper.map(dto, Patient.class);
 
         // 2. Save Entity → Database
         Patient savedPatient = patientRepository.save(patient);
         logger.info("Patient saved with ID: {}", savedPatient.getId());
 
         // 3. Convert Entity → Response DTO
-        PatientResponseDTO responseDTO = new PatientResponseDTO();
-        responseDTO.setId(savedPatient.getId());
-        responseDTO.setName(savedPatient.getName());
-        responseDTO.setGender(savedPatient.getGender());
-        responseDTO.setAge(savedPatient.getAge());
-        responseDTO.setEmail(savedPatient.getEmail());
-        responseDTO.setAdmissionDate(savedPatient.getAdmissionDate());
+        PatientResponseDTO responseDTO = modelMapper.map(savedPatient, PatientResponseDTO.class);
 
-        return responseDTO; // return the DTO
+        return responseDTO; // Return the DTO
     }
+
 
 
     @Override
@@ -63,15 +58,9 @@ public class PatientServiceImpl implements PatientService {
         Page<Patient> patients = patientRepository.findAll(pageable);
 
         // Map Patient Entity Page to PatientResponseDTO Page
-        Page<PatientResponseDTO> patientDtos = patients.map(patient -> {
-            PatientResponseDTO dto = new PatientResponseDTO();
-            dto.setId(patient.getId());
-            dto.setName(patient.getName());
-            dto.setAge(patient.getAge());
-            dto.setGender(patient.getGender());
-            // Add other necessary fields...
-            return dto;
-        });
+        Page<PatientResponseDTO> patientDtos = patients.map(patient ->
+                modelMapper.map(patient, PatientResponseDTO.class));
+
         return patientDtos; // Returns DTO Page
     }
 
@@ -97,25 +86,17 @@ public class PatientServiceImpl implements PatientService {
                     return new PatientNotFoundException("Patient not found with id " + id);
                 });
 
-        // Update fields from DTO
-        patient.setName(dto.getName());
-        patient.setGender(dto.getGender());
-        patient.setAge(dto.getAge());
-        patient.setEmail(dto.getEmail());
-        patient.setAdmissionDate(dto.getAdmissionDate());
+        // 1.  Use ModelMapper to update the EXISTING 'patient' entity from the 'dto'
+        // This replaces all the manual 'patient.setName(dto.getName());' lines.
+        modelMapper.map(dto, patient);
 
         Patient updatedPatient = patientRepository.save(patient);
 
         logger.info("Patient updated successfully with ID: {}", updatedPatient.getId());
 
-        // ✅ Convert Entity → DTO before returning
-        PatientResponseDTO responseDTO = new PatientResponseDTO();
-        responseDTO.setId(updatedPatient.getId());
-        responseDTO.setName(updatedPatient.getName());
-        responseDTO.setGender(updatedPatient.getGender());
-        responseDTO.setAge(updatedPatient.getAge());
-        responseDTO.setEmail(updatedPatient.getEmail());
-        responseDTO.setAdmissionDate(updatedPatient.getAdmissionDate());
+        // 2.  Use ModelMapper to convert the updated Entity to the Response DTO
+        // This replaces all the manual 'responseDTO.setId(updatedPatient.getId());' lines.
+        PatientResponseDTO responseDTO = modelMapper.map(updatedPatient, PatientResponseDTO.class);
 
         return responseDTO;
     }

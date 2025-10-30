@@ -6,6 +6,7 @@ import com.springboot.hospitalmgmt.HospitalManagement.exceptions.BillNotFoundExc
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.BillRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
+import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
@@ -22,6 +23,9 @@ public class BillServiceimpl implements BillService {
     private static final Logger logger = LoggerFactory.getLogger(BillServiceimpl.class);
 
     @Autowired
+    private ModelMapper modelMapper;
+
+    @Autowired
     private BillRepository billRepository;
 
     // Create or update bill
@@ -29,20 +33,14 @@ public class BillServiceimpl implements BillService {
     public BillResponseDTO createBill(BillRequestDTO billRequestDTO) {
         logger.info("Creating new bill for patient ID: {}", billRequestDTO.getPatientId());
 
-        Bill bill = new Bill();
-        bill.setPatientId(billRequestDTO.getPatientId());
-        bill.setStatus(billRequestDTO.getStatus());
-        bill.setAmount(billRequestDTO.getAmount());
+        Bill bill = modelMapper.map(billRequestDTO,Bill.class);
 
         Bill savedBill = billRepository.save(bill);
         logger.info("Bill created successfully for patient ID: {}", savedBill.getPatientId());
 
-        // Convert Entity → Response DTO
-        BillResponseDTO responseDTO = new BillResponseDTO();
-        responseDTO.setId(savedBill.getId());
-        responseDTO.setAmount(savedBill.getAmount());
-        responseDTO.setPatientId(savedBill.getPatientId());
-        responseDTO.setStatus(savedBill.getStatus());
+        // Convert Entity -> Response DTO
+        // ERROR FIX: Corrected syntax and mapped the savedBill
+        BillResponseDTO responseDTO = modelMapper.map(savedBill, BillResponseDTO.class); 
 
         return responseDTO;
     }
@@ -60,11 +58,13 @@ public class BillServiceimpl implements BillService {
         Page<BillResponseDTO> billDTOS = bills.map(bill -> {
             BillResponseDTO dto =  new BillResponseDTO();
 
-            // --- Correction: Use Setters to populate the DTO ---
+            // ERROR FIX: Populated all expected fields in the DTO
             dto.setId(bill.getId());
             dto.setAmount(bill.getAmount());
+            dto.setPatientId(bill.getPatientId()); 
+            dto.setStatus(bill.getStatus());       
 
-            // --- Correction: Explicitly Return the mapped DTO ---
+            // --- Explicitly Return the mapped DTO ---
             return dto;
         });
 
@@ -114,23 +114,19 @@ public class BillServiceimpl implements BillService {
                 });
 
         // 2. Apply updates from the DTO to the entity
-        // We only update the mutable fields received from the request DTO.
         // Note: This logic assumes PatientId and Status are fields that can be updated.
         bill.setPatientId(dto.getPatientId());
         bill.setAmount(dto.getAmount());
-        bill.setStatus(dto.getStatus()); // Corrected the typo (getStatus -> setStatus)
+        bill.setStatus(dto.getStatus()); 
 
         // 3. Save the updated entity
         Bill updatedBill = billRepository.save(bill);
         logger.info("Bill updated successfully with ID {}", id);
 
         // 4. Convert the updated Entity to a Response DTO
-        BillResponseDTO responseDTO = new BillResponseDTO();
-        responseDTO.setId(updatedBill.getId()); // Include ID in the response
-        responseDTO.setAmount(updatedBill.getAmount());
-        responseDTO.setPatientId(updatedBill.getPatientId());
-        responseDTO.setStatus(updatedBill.getStatus());
-
+        // BEST PRACTICE FIX: Use ModelMapper for consistency, though manual mapping was also functionally correct
+        BillResponseDTO responseDTO = modelMapper.map(updatedBill, BillResponseDTO.class);
+        
         return responseDTO; // Returns the DTO
     }
 }
