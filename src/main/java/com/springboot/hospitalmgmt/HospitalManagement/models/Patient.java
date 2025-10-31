@@ -1,5 +1,6 @@
 package com.springboot.hospitalmgmt.HospitalManagement.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -14,6 +15,7 @@ import java.util.List;
 @Table(name = "patients", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email_address", name = "unique_email_constraint")
 })
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class Patient {
 
     @Id
@@ -45,7 +47,7 @@ public class Patient {
     @Column(nullable = false)
     private LocalDate admissionDate;
 
-    @OneToOne(fetch = FetchType.LAZY)
+    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.MERGE)
     @JoinColumn(name = "insurance_id")
     private Insurance insurance;
 

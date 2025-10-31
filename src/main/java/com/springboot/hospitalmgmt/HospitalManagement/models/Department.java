@@ -2,7 +2,6 @@ package com.springboot.hospitalmgmt.HospitalManagement.models;
 
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,7 +33,8 @@ public class Department {
     @JoinTable(
             name = "my_dpt_docters",
             joinColumns = @JoinColumn(name = "dpt_id"),
-            inverseJoinColumns = @JoinColumn(name = "doctor_id") // Refers to the Doctor ID
+            inverseJoinColumns = @JoinColumn(name = "doctor_id")
+            // Refers to the Doctor ID
     )
     private Set<Doctor> doctors = new HashSet<>(); // Field name "doctors" matches mappedBy in Doctor class
     // *** END DEPARTMENT STUFF ***

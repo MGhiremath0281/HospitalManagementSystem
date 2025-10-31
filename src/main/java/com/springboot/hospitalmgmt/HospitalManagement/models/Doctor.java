@@ -33,7 +33,7 @@ public class Doctor {
     private List<Appointment> appointment; // Retained singular name 'appointment'
 
     // Retained "doctors" as the mappedBy value from Department class
-    @ManyToMany(mappedBy = "doctors")
+    @ManyToMany(mappedBy = "doctors",cascade = CascadeType.MERGE)
     private Set<Department> departments = new HashSet<>();
     // *** END FIX ***
 
