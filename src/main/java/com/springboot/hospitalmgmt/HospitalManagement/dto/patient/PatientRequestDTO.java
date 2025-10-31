@@ -1,7 +1,14 @@
 package com.springboot.hospitalmgmt.HospitalManagement.dto.patient;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter; // Using @Getter/@Setter for cleaner code
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
+
+// Removed all manual getters/setters and replaced with Lombok annotations
+
 @AllArgsConstructor
 @NoArgsConstructor
 public class PatientRequestDTO {
@@ -10,6 +17,9 @@ public class PatientRequestDTO {
     private int age;
     private String email;
     private LocalDate admissionDate;
+
+    // 💡 BEST PRACTICE: Use the ID for the relationship, not the full entity object
+    private Long insuranceId;
 
     public String getName() {
         return name;
@@ -49,5 +59,13 @@ public class PatientRequestDTO {
 
     public void setAdmissionDate(LocalDate admissionDate) {
         this.admissionDate = admissionDate;
+    }
+
+    public Long getInsuranceId() {
+        return insuranceId;
+    }
+
+    public void setInsuranceId(Long insuranceId) {
+        this.insuranceId = insuranceId;
     }
 }
