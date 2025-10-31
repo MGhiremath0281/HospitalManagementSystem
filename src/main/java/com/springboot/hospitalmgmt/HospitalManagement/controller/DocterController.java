@@ -1,6 +1,6 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
-import com.springboot.hospitalmgmt.HospitalManagement.models.Docter;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Doctor;
 import com.springboot.hospitalmgmt.HospitalManagement.service.DocterService;
 
 import jakarta.validation.Valid;
@@ -19,18 +19,18 @@ public class DocterController {
 
     // Create doctor
     @PostMapping
-    public ResponseEntity<Docter> createDocter(@Valid @RequestBody Docter docter) {
-        Docter savedDocter = docterService.createDocter(docter);
-        return ResponseEntity.ok(savedDocter);
+    public ResponseEntity<Doctor> createDocter(@Valid @RequestBody Doctor doctor) {
+        Doctor savedDoctor = docterService.createDocter(doctor);
+        return ResponseEntity.ok(savedDoctor);
     }
 
     // Get all docters with pagination
     @GetMapping
-    public ResponseEntity<Page<Docter>> getAllDocters(
+    public ResponseEntity<Page<Doctor>> getAllDocters(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "5") int size) {
 
-        Page<Docter> docters = docterService.getAllDocters(page, size);
+        Page<Doctor> docters = docterService.getAllDocters(page, size);
         return ResponseEntity.ok(docters);
     }
 
@@ -44,13 +44,13 @@ public class DocterController {
 
     // Update docter
     @PutMapping("/{id}")
-    public ResponseEntity<?> updateDocter(@PathVariable Long id, @Valid @RequestBody Docter docter) {
-        Docter updatedDocter = docterService.updateDocter(id, docter);
+    public ResponseEntity<?> updateDocter(@PathVariable Long id, @Valid @RequestBody Doctor doctor) {
+        Doctor updatedDoctor = docterService.updateDocter(id, doctor);
 
-        if (updatedDocter == null) {
+        if (updatedDoctor == null) {
             return ResponseEntity.notFound().build();
         }
-        return ResponseEntity.ok(updatedDocter);
+        return ResponseEntity.ok(updatedDoctor);
     }
 
     // Delete docter

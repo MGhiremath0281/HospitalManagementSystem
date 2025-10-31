@@ -1,7 +1,14 @@
 package com.springboot.hospitalmgmt.HospitalManagement.dto.patient;
 
-import lombok.*;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Insurance; // Keep the entity import for now
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.time.LocalDate;
+
+
 @AllArgsConstructor
 @NoArgsConstructor
 public class PatientResponseDTO {
@@ -12,6 +19,10 @@ public class PatientResponseDTO {
     private int age;
     private String email;
     private LocalDate admissionDate;
+
+    // NOTE: Removed JPA annotations (@OneToOne, @JoinColumn, FetchType.LAZY)
+    // DTOs must not contain persistence logic.
+    private Insurance insurance;
 
     public Long getId() {
         return id;
@@ -59,5 +70,13 @@ public class PatientResponseDTO {
 
     public void setAdmissionDate(LocalDate admissionDate) {
         this.admissionDate = admissionDate;
+    }
+
+    public Insurance getInsurance() {
+        return insurance;
+    }
+
+    public void setInsurance(Insurance insurance) {
+        this.insurance = insurance;
     }
 }

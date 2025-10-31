@@ -1,6 +1,6 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
-import com.springboot.hospitalmgmt.HospitalManagement.models.Docter;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Doctor;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.DocterRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.service.DocterService;
 
@@ -23,31 +23,31 @@ public class DocterServiceImpl implements DocterService {
     private DocterRepository docterRepository;
 
     @Override
-    public Docter createDocter(Docter docter) {
-        logger.info("Creating doctor with ID: {}", docter.getId());
-        return docterRepository.save(docter);
+    public Doctor createDocter(Doctor doctor) {
+        logger.info("Creating doctor with ID: {}", doctor.getId());
+        return docterRepository.save(doctor);
     }
 
     @Override
-    public Page<Docter> getAllDocters(int page, int size) {
+    public Page<Doctor> getAllDocters(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         logger.debug("Fetching doctors with pagination: page={}, size={}", page, size);
         return docterRepository.findAll(pageable);
     }
 
     @Override
-    public Optional<Docter> getDocterById(Long id) {
+    public Optional<Doctor> getDocterById(Long id) {
         logger.debug("Fetching doctor with ID: {}", id);
         return docterRepository.findById(id);
     }
 
     @Override
-    public Docter updateDocter(Long id, Docter docter) {
+    public Doctor updateDocter(Long id, Doctor doctor) {
         logger.info("Updating doctor with ID: {}", id);
 
         return docterRepository.findById(id).map(existingDocter -> {
-            existingDocter.setName(docter.getName());
-            existingDocter.setSpacility(docter.getSpacility());
+            existingDocter.setName(doctor.getName());
+            existingDocter.setSpacility(doctor.getSpacility());
             return docterRepository.save(existingDocter);
         }).orElse(null);
     }
