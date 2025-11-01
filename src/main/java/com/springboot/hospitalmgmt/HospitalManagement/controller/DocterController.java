@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.data.domain.Page;
 
 @RestController
-@RequestMapping("/api/docters")
+@RequestMapping("/api/doctors")
 public class DocterController {
 
     @Autowired

@@ -13,14 +13,14 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @RestController
-@RequestMapping("/appointments")
+@RequestMapping("/private/appointments")
 @CrossOrigin(origins = "*")
-public class AppointmentController { // <-- FIXED CLASS NAME SPELLING
+public class AppointmentController {
 
     private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class); // <-- FIXED LOGGER CLASS
 
     @Autowired
-    private AppointmentService appointmentService; // <-- FIXED FIELD NAME SPELLING
+    private AppointmentService appointmentService;
 
     // Create / Update
     @PostMapping

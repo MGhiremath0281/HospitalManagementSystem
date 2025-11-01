@@ -2,7 +2,6 @@ package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
 import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillRequestDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillResponseDTO;
-import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
 
@@ -20,7 +19,7 @@ import org.slf4j.LoggerFactory;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/bills")
+@RequestMapping("/admin/api/v1/bills")
 public class BillController {
 
     private static final Logger logger = LoggerFactory.getLogger(BillController.class);
