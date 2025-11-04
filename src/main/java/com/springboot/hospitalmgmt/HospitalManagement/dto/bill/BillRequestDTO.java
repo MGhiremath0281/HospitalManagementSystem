@@ -11,7 +11,7 @@ public class BillRequestDTO {
     @NotNull(message = "Amount can't be blank")
     private double amount;
 
-    @NotBlank(message ="Status can't be blank")
+    @NotBlank(message = "Status can't be blank")
     private String status;
 
     public Long getPatientId() {

@@ -1,11 +1,9 @@
 package com.springboot.hospitalmgmt.HospitalManagement.dto.patient;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter; // Using @Getter/@Setter for cleaner code
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
 import java.time.LocalDate;
+
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 
 // Removed all manual getters/setters and replaced with Lombok annotations
 
