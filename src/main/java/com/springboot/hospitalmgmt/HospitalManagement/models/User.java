@@ -95,4 +95,10 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
+    @Override
+    public String getPassword() {
+        return this.password;
+    }
+
 }
