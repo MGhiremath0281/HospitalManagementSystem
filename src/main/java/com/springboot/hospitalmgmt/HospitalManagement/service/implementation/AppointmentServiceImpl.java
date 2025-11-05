@@ -1,76 +1,77 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
-import com.springboot.hospitalmgmt.HospitalManagement.exceptions.AppointmentNotFoundException;
-import com.springboot.hospitalmgmt.HospitalManagement.models.Appointment; // Corrected Import
-import com.springboot.hospitalmgmt.HospitalManagement.repository.AppointmentRepository; // Renamed Repository (assuming you updated it)
-import com.springboot.hospitalmgmt.HospitalManagement.service.AppointmentService; // Corrected Import
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.PageRequest;
+import java.util.HashSet;
+import java.util.Set;
 
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
+
+import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthRequest;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthResponse;
+import com.springboot.hospitalmgmt.HospitalManagement.models.RoleType;
+import com.springboot.hospitalmgmt.HospitalManagement.models.User;
+import com.springboot.hospitalmgmt.HospitalManagement.repository.UserRepository;
+import com.springboot.hospitalmgmt.HospitalManagement.security.JwtUtil;
+import com.springboot.hospitalmgmt.HospitalManagement.service.AuthService;
 
 @Service
-public class AppointmentServiceImpl implements AppointmentService { // Corrected Class Name and Interface
-
-    private static final Logger logger = LoggerFactory.getLogger(AppointmentServiceImpl.class);
+public class AuthServiceImpl implements AuthService {
 
     @Autowired
-    private AppointmentRepository appointmentRepository; // Corrected Repository Name
+    private UserRepository userRepository;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtUtil jwtUtil;
 
     @Override
-    public Appointment saveAppointment(Appointment appointment) { // Corrected Method Name
-        if (appointment.getId() == null) {
-            // Checks for Patient ID: Note that 'getPatient()' and 'getId()' work because your Patient entity uses @Getter
-            Long patientId = (appointment.getPatient() != null) ? appointment.getPatient().getId() : null;
-            logger.info("Creating new appointment for patient ID: {}", patientId);
-        } else {
-            logger.info("Updating existing appointment with ID: {}", appointment.getId());
+    public AuthResponse login(AuthRequest request) {
+        Authentication auth = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
+        );
+
+        User user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        String token = jwtUtil.generateToken(user);
+        return new AuthResponse(token, user.getEmail(), user.getName());
+    }
+
+    @Override
+    public void register(AuthRequest request) {
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new RuntimeException("Email already registered");
         }
-        return appointmentRepository.save(appointment);
-    }
 
-    @Override
-    public Page<Appointment> getAllAppointments(int page, int size) { // Corrected Method Name
-        logger.debug("Fetching all appointments (page={}, size={})", page, size);
-        Pageable pageable = PageRequest.of(page, size);
-        return appointmentRepository.findAll(pageable);
-    }
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        user.setEnabled(true);
 
-    @Override
-    public Appointment getAppointmentById(Long id) throws AppointmentNotFoundException { // Corrected Method Name
-        logger.info("Fetching appointment by ID: {}", id);
-        return appointmentRepository.findById(id)
-                .orElseThrow(() -> new AppointmentNotFoundException(id));
-    }
+        // Assign role based on request.role
+        Set<RoleType> roles = new HashSet<>();
+        if (request.getRole() != null) {
+            switch (request.getRole().toUpperCase()) {
+                case "PATIENT" -> roles.add(RoleType.PATIENT);
+                case "DOCTOR" -> roles.add(RoleType.DOCTOR);
+                case "ADMIN" -> roles.add(RoleType.ADMIN);
+                default -> throw new RuntimeException("Invalid role specified");
+            }
+        } else {
+            roles.add(RoleType.PATIENT); // default role
+        }
+        user.setRoles(roles);
 
-    @Override
-    public List<Appointment> getAppointmentsByPatientId(Long patientId) { // Corrected Method Name
-        logger.info("Fetching all appointments for patient ID: {}", patientId);
-        // Uses findByPatient_Id (assuming this custom query method is in your Repository)
-        return appointmentRepository.findByPatient_Id(patientId);
-    }
-
-    @Override
-    public List<Appointment> getAppointmentsByDoctorId(Long doctorId) { // Corrected Method Name and Spelling
-        logger.info("Fetching all appointments for doctor ID: {}", doctorId);
-        // Uses findByDoctor_Id (assuming this custom query method is in your Repository)
-        return appointmentRepository.findByDoctor_Id(doctorId);
-    }
-
-    @Override
-    public void deleteAppointment(Long id) { // Corrected Method Name
-        logger.warn("Deleting appointment with ID: {}", id);
-        appointmentRepository.findById(id)
-                .orElseThrow(() -> {
-                    logger.error("Can't delete - Appointment with ID: {} not found", id);
-                    return new AppointmentNotFoundException(id);
-                });
-        appointmentRepository.deleteById(id);
-        logger.info("Successfully deleted the appointment with ID: {}", id);
+        userRepository.save(user);
     }
 }
