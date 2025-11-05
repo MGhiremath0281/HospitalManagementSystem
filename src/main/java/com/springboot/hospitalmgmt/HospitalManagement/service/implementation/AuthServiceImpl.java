@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthRequest;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthResponse;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Doctor;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Patient;
 import com.springboot.hospitalmgmt.HospitalManagement.models.RoleType;
 import com.springboot.hospitalmgmt.HospitalManagement.models.User;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.UserRepository;
@@ -54,16 +56,16 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Email already registered");
         }
 
-        // Assign role based on request
+        // Assign role
         RoleType role = RoleType.PATIENT; // default
-        if ("doctor".equalsIgnoreCase(request.getRole())) {
+        if ("doctor".equalsIgnoreCase(request.getRole()))
             role = RoleType.DOCTOR;
-        } else if ("staff".equalsIgnoreCase(request.getRole())) {
+        else if ("staff".equalsIgnoreCase(request.getRole()))
             role = RoleType.STAFF;
-        } else if ("admin".equalsIgnoreCase(request.getRole())) {
+        else if ("admin".equalsIgnoreCase(request.getRole()))
             role = RoleType.ADMIN;
-        }
 
+        // 1. Create User
         User user = User.builder()
                 .name(request.getName())
                 .email(request.getEmail())
@@ -73,6 +75,27 @@ public class AuthServiceImpl implements AuthService {
                 .accountLocked(false)
                 .build();
 
+        // 2. Save user first to get the ID (important for linking)
         userRepository.save(user);
+
+        // 3. Create linked entity
+        if (role == RoleType.PATIENT) {
+            Patient patient = Patient.builder()
+                    .name(request.getName())
+                    .email(request.getEmail())
+                    .user(user) // link patient to user
+                    .build();
+            patientRepository.save(patient);
+        } else if (role == RoleType.DOCTOR) {
+            Doctor doctor = Doctor.builder()
+                    .name(request.getName())
+                    .spacility(request.getSpecialization()) // use DTO field
+                    .user(user) // link doctor to user
+                    .build();
+            doctorRepository.save(doctor);
+        }
+
+        // STAFF/ADMIN roles may not need extra entities
     }
+
 }

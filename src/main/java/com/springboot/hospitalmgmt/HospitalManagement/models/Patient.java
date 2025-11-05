@@ -1,12 +1,34 @@
 package com.springboot.hospitalmgmt.HospitalManagement.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Builder
@@ -15,7 +37,7 @@ import java.util.List;
 @Table(name = "patients", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email_address", name = "unique_email_constraint")
 })
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Patient {
 
     @Id
@@ -47,9 +69,13 @@ public class Patient {
     @Column(nullable = false)
     private LocalDate admissionDate;
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.MERGE)
+    @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.MERGE)
     @JoinColumn(name = "insurance_id")
     private Insurance insurance;
+
+    @OneToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 
     // Renamed to plural 'appointments' for clarity
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
