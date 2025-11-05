@@ -1,77 +1,103 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthRequest;
-import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthResponse;
-import com.springboot.hospitalmgmt.HospitalManagement.models.RoleType;
-import com.springboot.hospitalmgmt.HospitalManagement.models.User;
-import com.springboot.hospitalmgmt.HospitalManagement.repository.UserRepository;
-import com.springboot.hospitalmgmt.HospitalManagement.security.JwtUtil;
-import com.springboot.hospitalmgmt.HospitalManagement.service.AuthService;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.AppointmentRequest;
+import com.springboot.hospitalmgmt.HospitalManagement.exceptions.AppointmentNotFoundException;
+import com.springboot.hospitalmgmt.HospitalManagement.exceptions.ResourceNotFoundException; // <-- NOW REQUIRED
+import com.springboot.hospitalmgmt.HospitalManagement.models.Appointment;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Doctor;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Patient;
+import com.springboot.hospitalmgmt.HospitalManagement.repository.AppointmentRepository;
+import com.springboot.hospitalmgmt.HospitalManagement.repository.DocterRepository; // <-- CORRECTED IMPORT (Based on your project structure)
+import com.springboot.hospitalmgmt.HospitalManagement.repository.PatientRepository;
+import com.springboot.hospitalmgmt.HospitalManagement.service.AppointmentService;
 
 @Service
-public class AuthServiceImpl implements AuthService {
+public class AppointmentServiceImpl implements AppointmentService {
+
+    private static final Logger logger = LoggerFactory.getLogger(AppointmentServiceImpl.class);
 
     @Autowired
-    private UserRepository userRepository;
+    private AppointmentRepository appointmentRepository;
+
+    // 💡 CRITICAL FIX: Injected DocterRepository
+    @Autowired
+    private DocterRepository docterRepository;
 
     @Autowired
-    private AuthenticationManager authenticationManager;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    @Autowired
-    private JwtUtil jwtUtil;
+    private PatientRepository patientRepository; // Assuming this exists
 
     @Override
-    public AuthResponse login(AuthRequest request) {
-        Authentication auth = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
-        );
+    public Appointment saveAppointment(AppointmentRequest request) {
+        logger.info("Processing appointment creation for Doctor ID: {} and Patient ID: {}",
+                request.getDoctorId(), request.getPatientId());
 
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
+        // 1. Fetch Doctor Entity
+        Doctor doctor = docterRepository.findById(request.getDoctorId()) // <-- USING docterRepository
+                .orElseThrow(() -> new ResourceNotFoundException("Doctor", request.getDoctorId()));
 
-        String token = jwtUtil.generateToken(user);
-        return new AuthResponse(token, user.getEmail(), user.getName());
+        // 2. Fetch Patient Entity
+        Patient patient = patientRepository.findById(request.getPatientId())
+                .orElseThrow(() -> new ResourceNotFoundException("Patient", request.getPatientId()));
+
+        // 3. Build the Appointment Entity (Doctor is now guaranteed non-null)
+        Appointment appointment = Appointment.builder()
+                .date(request.getDate())
+                .doctor(doctor)
+                .patient(patient)
+                .build();
+
+        // 4. Save the entity
+        Appointment saved = appointmentRepository.save(appointment);
+        logger.info("New appointment created successfully with ID: {}", saved.getId());
+        return saved;
+    }
+
+    // --- EXISTING METHODS ---
+    @Override
+    public Page<Appointment> getAllAppointments(int page, int size) {
+        logger.debug("Fetching all appointments (page={}, size={})", page, size);
+        Pageable pageable = PageRequest.of(page, size);
+        return appointmentRepository.findAll(pageable);
     }
 
     @Override
-    public void register(AuthRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new RuntimeException("Email already registered");
-        }
+    public Appointment getAppointmentById(Long id) throws AppointmentNotFoundException {
+        logger.info("Fetching appointment by ID: {}", id);
+        return appointmentRepository.findById(id)
+                .orElseThrow(() -> new AppointmentNotFoundException(id));
+    }
 
-        User user = new User();
-        user.setName(request.getName());
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setEnabled(true);
+    @Override
+    public List<Appointment> getAppointmentsByPatientId(Long patientId) {
+        logger.info("Fetching all appointments for patient ID: {}", patientId);
+        return appointmentRepository.findByPatient_Id(patientId);
+    }
 
-        // Assign role based on request.role
-        Set<RoleType> roles = new HashSet<>();
-        if (request.getRole() != null) {
-            switch (request.getRole().toUpperCase()) {
-                case "PATIENT" -> roles.add(RoleType.PATIENT);
-                case "DOCTOR" -> roles.add(RoleType.DOCTOR);
-                case "ADMIN" -> roles.add(RoleType.ADMIN);
-                default -> throw new RuntimeException("Invalid role specified");
-            }
-        } else {
-            roles.add(RoleType.PATIENT); // default role
-        }
-        user.setRoles(roles);
+    @Override
+    public List<Appointment> getAppointmentsByDoctorId(Long doctorId) {
+        logger.info("Fetching all appointments for doctor ID: {}", doctorId);
+        return appointmentRepository.findByDoctor_Id(doctorId);
+    }
 
-        userRepository.save(user);
+    @Override
+    public void deleteAppointment(Long id) {
+        logger.warn("Deleting appointment with ID: {}", id);
+        appointmentRepository.findById(id)
+                .orElseThrow(() -> {
+                    logger.error("Can't delete - Appointment with ID: {} not found", id);
+                    return new AppointmentNotFoundException(id);
+                });
+        appointmentRepository.deleteById(id);
+        logger.info("Successfully deleted the appointment with ID: {}", id);
     }
 }

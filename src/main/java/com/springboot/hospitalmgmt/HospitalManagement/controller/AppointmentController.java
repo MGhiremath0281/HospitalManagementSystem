@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.springboot.hospitalmgmt.HospitalManagement.dto.AppointmentRequest; // <-- NEW IMPORT for DTO
 import com.springboot.hospitalmgmt.HospitalManagement.models.Appointment;
 import com.springboot.hospitalmgmt.HospitalManagement.service.AppointmentService;
 
@@ -36,11 +37,17 @@ public class AppointmentController {
     // Create / Update – only doctors and staff
     @PostMapping
     @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
-    public ResponseEntity<Appointment> save(@Valid @RequestBody Appointment appointment) {
-        Long patientId = (appointment.getPatient() != null) ? appointment.getPatient().getId() : null;
-        logger.info("Received request to save appointment for patient ID: {}", patientId);
+    // 💡 UPDATED: Now accepts AppointmentRequest DTO for robust validation
+    public ResponseEntity<Appointment> save(@Valid @RequestBody AppointmentRequest request) {
 
-        Appointment saved = appointmentService.saveAppointment(appointment);
+        // Log the IDs from the DTO instead of trying to access nested objects which
+        // might be null
+        logger.info("Received request to save appointment for patient ID: {} and doctor ID: {}",
+                request.getPatientId(), request.getDoctorId());
+
+        // The service layer now handles mapping the DTO IDs to entities and saving
+        Appointment saved = appointmentService.saveAppointment(request);
+
         logger.info("Appointment saved successfully with ID: {}", saved.getId());
         return ResponseEntity.ok(saved);
     }
@@ -49,7 +56,7 @@ public class AppointmentController {
     @GetMapping
     @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
     public Page<Appointment> getAll(@RequestParam(defaultValue = "0") int page,
-                                    @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size) {
         logger.debug("Fetching paginated list of appointments (page={}, size={})", page, size);
         return appointmentService.getAllAppointments(page, size);
     }

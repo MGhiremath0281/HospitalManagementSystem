@@ -5,6 +5,7 @@ import java.util.Date;
 
 import org.springframework.stereotype.Component;
 
+import com.springboot.hospitalmgmt.HospitalManagement.models.RoleType;
 import com.springboot.hospitalmgmt.HospitalManagement.models.User;
 
 import io.jsonwebtoken.JwtException;
@@ -21,13 +22,13 @@ public class JwtUtil {
     private final Key key = Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
 
     public String generateToken(User user) {
-    return Jwts.builder()
-            .setSubject(user.getEmail())
-            .claim("roles", user.getRoles().stream().map(RoleType::name).toList())
-            .setIssuedAt(new Date())
-            .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
-            .signWith(key, SignatureAlgorithm.HS256)
-            .compact();
+        return Jwts.builder()
+                .setSubject(user.getEmail())
+                .claim("roles", user.getRoles().stream().map(RoleType::name).toList())
+                .setIssuedAt(new Date())
+                .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION_TIME))
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
     }
 
     public String extractUsername(String token) {
