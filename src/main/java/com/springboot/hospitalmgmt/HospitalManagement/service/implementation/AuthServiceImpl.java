@@ -1,5 +1,7 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
+import java.util.Collections;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -9,6 +11,7 @@ import org.springframework.stereotype.Service;
 
 import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthRequest;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.auth.AuthResponse;
+import com.springboot.hospitalmgmt.HospitalManagement.models.RoleType;
 import com.springboot.hospitalmgmt.HospitalManagement.models.User;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.UserRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.security.JwtUtil;
@@ -29,56 +32,47 @@ public class AuthServiceImpl implements AuthService {
     @Autowired
     private AuthenticationManager authenticationManager;
 
-    /**
-     * Authenticates the user and returns the JWT token and user details,
-     * using the saved name from the database.
-     */
     @Override
     public AuthResponse login(AuthRequest request) {
-        // 1. Authenticate the user credentials
+        // Authenticate user credentials
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        // 2. Retrieve the full User object to get the saved name
+        // Retrieve full User object to get saved name
         User user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("User not found after authentication"));
 
-        // 3. Generate JWT
+        // Generate JWT token
         String token = jwtUtil.generateToken(user);
 
-        // 4. Return AuthResponse using the actual name retrieved from the User entity
         return new AuthResponse(token, user.getEmail(), user.getName());
     }
 
-    /**
-     * Registers a new user. It does NOT generate a JWT token.
-     * The return type is changed from AuthResponse to void, and the name
-     * is correctly extracted from the AuthRequest.
-     */
     @Override
     public void register(AuthRequest request) {
-    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-        throw new RuntimeException("Email already registered");
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+            throw new RuntimeException("Email already registered");
+        }
+
+        // Assign role based on request
+        RoleType role = RoleType.PATIENT; // default
+        if ("doctor".equalsIgnoreCase(request.getRole())) {
+            role = RoleType.DOCTOR;
+        } else if ("staff".equalsIgnoreCase(request.getRole())) {
+            role = RoleType.STAFF;
+        } else if ("admin".equalsIgnoreCase(request.getRole())) {
+            role = RoleType.ADMIN;
+        }
+
+        User user = User.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .roles(Collections.singleton(role))
+                .enabled(true)
+                .accountLocked(false)
+                .build();
+
+        userRepository.save(user);
     }
-
-    RoleType role = RoleType.ROLE_PATIENT; // default for normal users
-    // Optional: assign role based on request
-    if ("doctor".equalsIgnoreCase(request.getRole())) {
-        role = RoleType.ROLE_DOCTOR;
-    } else if ("staff".equalsIgnoreCase(request.getRole())) {
-        role = RoleType.ROLE_STAFF;
-    }
-
-    User user = User.builder()
-            .name(request.getName())
-            .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .roles(Collections.singleton(role))
-            .enabled(true)
-            .accountLocked(false)
-            .build();
-
-    userRepository.save(user);
-    }
-
 }

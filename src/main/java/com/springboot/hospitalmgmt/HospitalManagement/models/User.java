@@ -41,13 +41,9 @@ public class User extends BaseEntity implements UserDetails {
     @Column(nullable = false)
     private String password;
 
-    @Builder.Default
     private boolean enabled = true;
-
-    @Builder.Default
     private boolean accountLocked = false;
 
-    @Builder.Default
     @ElementCollection(fetch = FetchType.EAGER)
     @Enumerated(EnumType.STRING)
     private Set<RoleType> roles = new HashSet<>();
@@ -66,7 +62,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // accounts never expire
+        return true;
     }
 
     @Override
@@ -76,7 +72,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // credentials never expire
+        return true;
     }
 
     @Override

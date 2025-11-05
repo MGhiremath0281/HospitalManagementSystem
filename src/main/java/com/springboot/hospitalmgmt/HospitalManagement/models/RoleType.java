@@ -1,12 +1,13 @@
 package com.springboot.hospitalmgmt.HospitalManagement.models;
 
 public enum RoleType {
-    ROLE_ADMIN,
-    ROLE_DOCTOR,
-    ROLE_PATIENT,
-    ROLE_STAFF;
+    PATIENT,
+    DOCTOR,
+    STAFF,
+    ADMIN;
 
-    public String getName(){
-        return this.name;
+    // This method is used to provide Spring Security compatible role names
+    public String getName() {
+        return "ROLE_" + this.name();
     }
 }
