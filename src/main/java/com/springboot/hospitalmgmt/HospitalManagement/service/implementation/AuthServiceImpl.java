@@ -57,22 +57,28 @@ public class AuthServiceImpl implements AuthService {
      */
     @Override
     public void register(AuthRequest request) {
-        // Simple check to prevent duplicate emails
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already registered.");
-        }
-
-        User user = new User();
-        user.setEmail(request.getEmail());
-        user.setPassword(passwordEncoder.encode(request.getPassword()));
-
-        // FIX: Use the name provided in the AuthRequest for registration
-        user.setName(request.getName());
-
-        user.setEnabled(true);
-        userRepository.save(user);
-
-        // Removed JWT generation and AuthResponse return to enforce login for token
-        // retrieval.
+    if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+        throw new RuntimeException("Email already registered");
     }
+
+    RoleType role = RoleType.ROLE_PATIENT; // default for normal users
+    // Optional: assign role based on request
+    if ("doctor".equalsIgnoreCase(request.getRole())) {
+        role = RoleType.ROLE_DOCTOR;
+    } else if ("staff".equalsIgnoreCase(request.getRole())) {
+        role = RoleType.ROLE_STAFF;
+    }
+
+    User user = User.builder()
+            .name(request.getName())
+            .email(request.getEmail())
+            .password(passwordEncoder.encode(request.getPassword()))
+            .roles(Collections.singleton(role))
+            .enabled(true)
+            .accountLocked(false)
+            .build();
+
+    userRepository.save(user);
+    }
+
 }

@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,70 +28,62 @@ import jakarta.validation.Valid;
 @CrossOrigin(origins = "*")
 public class AppointmentController {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class); // <-- FIXED LOGGER CLASS
+    private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class);
 
     @Autowired
     private AppointmentService appointmentService;
 
-    // Create / Update
+    // Create / Update – only doctors and staff
     @PostMapping
-    public ResponseEntity<Appointment> save(@Valid @RequestBody Appointment appointment) { // <-- FIXED PARAMETER
-                                                                                           // SPELLING
-        // FIX: Replaced apointment.getPatientId() with the correct way to get the ID
-        // from the Appointment model
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
+    public ResponseEntity<Appointment> save(@Valid @RequestBody Appointment appointment) {
         Long patientId = (appointment.getPatient() != null) ? appointment.getPatient().getId() : null;
         logger.info("Received request to save appointment for patient ID: {}", patientId);
 
-        // FIX: Corrected method name
         Appointment saved = appointmentService.saveAppointment(appointment);
         logger.info("Appointment saved successfully with ID: {}", saved.getId());
         return ResponseEntity.ok(saved);
     }
 
-    // Get All (with pagination)
+    // Get All (with pagination) – only doctors and staff
     @GetMapping
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF')")
     public Page<Appointment> getAll(@RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+                                    @RequestParam(defaultValue = "10") int size) {
         logger.debug("Fetching paginated list of appointments (page={}, size={})", page, size);
-
-        // FIX: Corrected method name
         return appointmentService.getAllAppointments(page, size);
     }
 
-    // Get By ID
+    // Get By ID – only doctor, staff, or the patient who owns it
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF') or @securityService.isAppointmentOwner(authentication, #id)")
     public ResponseEntity<Appointment> getById(@PathVariable Long id) {
         logger.info("Fetching appointment with ID: {}", id);
-
-        // FIX: Corrected method name
         Appointment appointment = appointmentService.getAppointmentById(id);
         return ResponseEntity.ok(appointment);
     }
 
-    // Get By Patient
+    // Get By Patient – only the patient themselves or doctor/staff
     @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF') or principal.id == #patientId")
     public List<Appointment> getByPatient(@PathVariable Long patientId) {
         logger.info("Fetching appointments for patient ID: {}", patientId);
-
-        // FIX: Corrected method name
         return appointmentService.getAppointmentsByPatientId(patientId);
     }
 
-    // Get By Doctor
+    // Get By Doctor – only the doctor themselves or staff
     @GetMapping("/doctor/{doctorId}")
+    @PreAuthorize("hasAnyRole('STAFF') or principal.id == #doctorId")
     public List<Appointment> getByDoctor(@PathVariable Long doctorId) {
         logger.info("Fetching appointments for doctor ID: {}", doctorId);
-
-        // FIX: Corrected method name and Doctor spelling
         return appointmentService.getAppointmentsByDoctorId(doctorId);
     }
 
-    // Delete
+    // Delete – only staff
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('STAFF')")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         logger.warn("Request received to delete appointment with ID: {}", id);
-
-        // FIX: Corrected method name
         appointmentService.deleteAppointment(id);
         logger.info("Appointment deleted successfully with ID: {}", id);
         return ResponseEntity.noContent().build();

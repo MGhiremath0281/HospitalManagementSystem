@@ -8,14 +8,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.*;
 
 import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientRequestDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
@@ -25,47 +19,54 @@ import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
 import jakarta.validation.Valid;
 
 @RestController
-@RequestMapping("/public/api/patients")
+@RequestMapping("/api/patients")
 public class PatientControllers {
+
     private static final Logger logger = LoggerFactory.getLogger(PatientControllers.class);
 
     @Autowired
     private PatientService patientService;
 
-    // Create Patient
-    @PostMapping
+    // ---------------------- PUBLIC ENDPOINTS ----------------------
+    @PostMapping("/register")
     public ResponseEntity<PatientResponseDTO> createPatient(@Valid @RequestBody PatientRequestDTO dto) {
+        // Anyone can register as a patient
         PatientResponseDTO response = patientService.createPatient(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    // Get All Patients with Pagination
+    // ---------------------- PRIVATE ENDPOINTS ----------------------
+
+    // Only doctors/staff/admins can view all patients
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF','ADMIN')")
     @GetMapping
     public ResponseEntity<Page<PatientResponseDTO>> getAllPatients(
-            @PageableDefault(page = 0, size = 2, sort = "id") Pageable pageable) {
+            @PageableDefault(page = 0, size = 10) Pageable pageable) {
         Page<PatientResponseDTO> patients = patientService.getAllPatients(pageable);
         return ResponseEntity.ok(patients);
     }
 
-    // Get Patient by ID
+    // Patients can view their own data; doctors/staff/admins can view any patient
+    @PreAuthorize("hasRole('PATIENT') and #id == principal.id or hasAnyRole('DOCTOR','STAFF','ADMIN')")
     @GetMapping("/{id}")
     public ResponseEntity<Patient> getPatientById(@PathVariable Long id) {
-        logger.info("Fetching the  patient by id : {}", id);
+        logger.info("Fetching patient by id: {}", id);
         return ResponseEntity.ok(patientService.getPatientById(id));
     }
 
-    // Update Patient
+    // Only doctors/staff/admins can update patient data
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF','ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<PatientResponseDTO> updatePatient(
             @PathVariable Long id,
             @Valid @RequestBody PatientRequestDTO dto) {
 
         PatientResponseDTO updatedPatient = patientService.updatePatient(id, dto);
-
         return ResponseEntity.ok(updatedPatient);
     }
 
-    // Delete Patient
+    // Only doctors/staff/admins can delete patient data
+    @PreAuthorize("hasAnyRole('DOCTOR','STAFF','ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deletePatient(@PathVariable Long id) {
         patientService.deletePatient(id);

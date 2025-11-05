@@ -22,9 +22,6 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-/**
- * Represents a user in the system and implements Spring Security's UserDetails.
- */
 @Entity
 @Table(name = "users")
 @Getter
@@ -32,13 +29,12 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-// Ensure BaseEntity provides the primary key (@Id)
+
 public class User extends BaseEntity implements UserDetails {
 
     @Column(nullable = false)
     private String name;
 
-    // Typically used as the login username in getUsername()
     @Column(nullable = false, unique = true)
     private String email;
 
@@ -48,29 +44,19 @@ public class User extends BaseEntity implements UserDetails {
     private boolean enabled = true;
     private boolean accountLocked = false;
 
-    // Standard practice for user roles. FetchType.EAGER is common for UserDetails.
-    @ManyToMany(fetch = FetchType.EAGER)
-    @JoinTable(name = "user_roles", joinColumns = @JoinColumn(name = "user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))
-    private Set<Role> roles = new HashSet<>();
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Enumerated(EnumType.STRING)
+    Set<RoleType> roles = new HashSet<>();
 
-    // ---------------------- Spring Security Methods (UserDetails)
-    // ----------------------
-
-    /**
-     * Maps the Set of Role entities to a Collection of GrantedAuthority objects.
-     * Roles are typically prefixed with "ROLE_" (e.g., "ROLE_ADMIN").
-     */
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return roles.stream()
-                // SimpleGrantedAuthority is the preferred implementation
+        
                 .map(role -> new SimpleGrantedAuthority(role.getName()))
                 .collect(Collectors.toSet());
     }
 
-    /**
-     * Returns the identifier used for login/authentication.
-     */
+   
     @Override
     public String getUsername() {
         return email;
@@ -78,7 +64,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isAccountNonExpired() {
-        return true; // Simple implementation: accounts never expire
+        return true; 
     }
 
     @Override
@@ -88,7 +74,7 @@ public class User extends BaseEntity implements UserDetails {
 
     @Override
     public boolean isCredentialsNonExpired() {
-        return true; // Simple implementation: credentials never expire
+        return true; 
     }
 
     @Override
