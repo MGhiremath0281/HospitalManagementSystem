@@ -25,7 +25,7 @@ import jakarta.validation.Valid;
 @RestController
 @RequestMapping("/public/api")
 @CrossOrigin(origins = "*")
-public class AppointmentController { // <-- FIXED CLASS NAME SPELLING
+public class AppointmentController {
 
     private static final Logger logger = LoggerFactory.getLogger(AppointmentController.class); // <-- FIXED LOGGER CLASS
 
