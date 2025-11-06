@@ -1,21 +1,47 @@
 package com.springboot.hospitalmgmt.HospitalManagement.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Max;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.PastOrPresent;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 @Entity
-@Builder
-@AllArgsConstructor
-@NoArgsConstructor
 @Table(name = "patients", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email_address", name = "unique_email_constraint")
 })
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+@JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class Patient {
 
     @Id
@@ -47,78 +73,22 @@ public class Patient {
     @Column(nullable = false)
     private LocalDate admissionDate;
 
-    @OneToOne(fetch = FetchType.LAZY,cascade = CascadeType.MERGE)
-    @JoinColumn(name = "insurance_id")
+    // 👇 Changed cascade type to PERSIST (prevents overwriting existing insurance)
+    @OneToOne(fetch = FetchType.LAZY, cascade = { CascadeType.PERSIST })
+    @JoinColumn(name = "insurance_id", referencedColumnName = "id")
     private Insurance insurance;
 
-    // Renamed to plural 'appointments' for clarity
     @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Appointment> appointments = new ArrayList<>();
 
-    // --- GETTERS AND SETTERS ---
-
-    public Long getId() {
-        return id;
+    // helper method
+    public void addAppointment(Appointment appointment) {
+        appointments.add(appointment);
+        appointment.setPatient(this);
     }
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getGender() {
-        return gender;
-    }
-
-    public void setGender(String gender) {
-        this.gender = gender;
-    }
-
-    public int getAge() {
-        return age;
-    }
-
-    public void setAge(int age) {
-        this.age = age;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public LocalDate getAdmissionDate() {
-        return admissionDate;
-    }
-
-    public void setAdmissionDate(LocalDate admissionDate) {
-        this.admissionDate = admissionDate;
-    }
-
-    public Insurance getInsurance() {
-        return insurance;
-    }
-
-    public void setInsurance(Insurance insurance) {
-        this.insurance = insurance;
-    }
-
-    // FIX: Added accessor methods for the 'appointments' list
-    public List<Appointment> getAppointments() {
-        return appointments;
-    }
-
-    public void setAppointments(List<Appointment> appointments) {
-        this.appointments = appointments;
+    public void removeAppointment(Appointment appointment) {
+        appointments.remove(appointment);
+        appointment.setPatient(null);
     }
 }

@@ -1,23 +1,30 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
-import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillRequestDTO;
-import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillResponseDTO;
-import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
-import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
-import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
+import java.util.List;
 
-import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus; // Import HttpStatus for 201 response
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillRequestDTO;
+import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillResponseDTO;
+import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
+import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
+
+import jakarta.validation.Valid;
 
 @RestController
 @RequestMapping("/api/v1/bills")
@@ -38,12 +45,10 @@ public class BillController {
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
-
     // ✅ Get all bills
     @GetMapping
     public ResponseEntity<Page<BillResponseDTO>> getAllBills(
-            @PageableDefault(size = 10,page = 0)Pageable pageable
-            ) {
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
         logger.info("Fetching all bills");
         Page<BillResponseDTO> bills = billService.getAllBills(pageable);
         return ResponseEntity.ok(bills);
