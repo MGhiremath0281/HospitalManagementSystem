@@ -1,11 +1,17 @@
 package com.springboot.hospitalmgmt.HospitalManagement.models;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.validation.constraints.NotBlank;
-import lombok.*;
+import jakarta.validation.constraints.NotNull; // <-- ADDED
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.NoArgsConstructor;
 
-// NOTE: Lombok annotations (@Builder, @AllArgsConstructor, @NoArgsConstructor)
-// are kept for constructor/builder functionality, but @Getter/@Setter are removed.
 @Entity
 @Builder
 @AllArgsConstructor
@@ -18,15 +24,16 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
-    private Doctor doctor; // <-- CORRECTED FIELD NAME (Doctor, not Docter)
+    @NotNull(message = "Doctor association is required.") // <--- ADDED VALIDATION
+    private Doctor doctor;
 
     @NotBlank(message = "Date can't be blank")
     private String date;
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
+    @NotNull(message = "Patient association is required.") // <--- ADDED VALIDATION
     private Patient patient;
-
 
     // --- ID Methods ---
 
@@ -38,7 +45,7 @@ public class Appointment {
         this.id = id;
     }
 
-    // --- DOCTOR Methods (Corrected Spelling and Completed) ---
+    // --- DOCTOR Methods ---
 
     public Doctor getDoctor() {
         return doctor;

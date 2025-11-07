@@ -1,19 +1,19 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service.implementation;
 
+import org.modelmapper.ModelMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientRequestDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.exceptions.PatientNotFoundException;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Patient;
 import com.springboot.hospitalmgmt.HospitalManagement.repository.PatientRepository;
 import com.springboot.hospitalmgmt.HospitalManagement.service.PatientService;
-
-import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
 
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -49,8 +49,6 @@ public class PatientServiceImpl implements PatientService {
         return responseDTO; // Return the DTO
     }
 
-
-
     @Override
     public Page<PatientResponseDTO> getAllPatients(Pageable pageable) {
         logger.debug("Fetching patients with pagination");
@@ -58,8 +56,8 @@ public class PatientServiceImpl implements PatientService {
         Page<Patient> patients = patientRepository.findAll(pageable);
 
         // Map Patient Entity Page to PatientResponseDTO Page
-        Page<PatientResponseDTO> patientDtos = patients.map(patient ->
-                modelMapper.map(patient, PatientResponseDTO.class));
+        Page<PatientResponseDTO> patientDtos = patients
+                .map(patient -> modelMapper.map(patient, PatientResponseDTO.class));
 
         return patientDtos; // Returns DTO Page
     }
@@ -72,7 +70,8 @@ public class PatientServiceImpl implements PatientService {
                     logger.error("Patient not found with ID: {}", id);
                     // Use a concise exception message or a specific constructor for consistency
                     return new PatientNotFoundException("Patient not found with id " + id);
-                    // Or simply: return new PatientNotFoundException(id); if the exception class supports it
+                    // Or simply: return new PatientNotFoundException(id); if the exception class
+                    // supports it
                 }); // Returns Entity
     }
 
@@ -86,7 +85,7 @@ public class PatientServiceImpl implements PatientService {
                     return new PatientNotFoundException("Patient not found with id " + id);
                 });
 
-        // 1.  Use ModelMapper to update the EXISTING 'patient' entity from the 'dto'
+        // 1. Use ModelMapper to update the EXISTING 'patient' entity from the 'dto'
         // This replaces all the manual 'patient.setName(dto.getName());' lines.
         modelMapper.map(dto, patient);
 
@@ -94,13 +93,13 @@ public class PatientServiceImpl implements PatientService {
 
         logger.info("Patient updated successfully with ID: {}", updatedPatient.getId());
 
-        // 2.  Use ModelMapper to convert the updated Entity to the Response DTO
-        // This replaces all the manual 'responseDTO.setId(updatedPatient.getId());' lines.
+        // 2. Use ModelMapper to convert the updated Entity to the Response DTO
+        // This replaces all the manual 'responseDTO.setId(updatedPatient.getId());'
+        // lines.
         PatientResponseDTO responseDTO = modelMapper.map(updatedPatient, PatientResponseDTO.class);
 
         return responseDTO;
     }
-
 
     @Override
     public void deletePatient(Long id) {

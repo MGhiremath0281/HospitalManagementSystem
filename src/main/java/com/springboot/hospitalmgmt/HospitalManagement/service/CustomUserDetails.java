@@ -1,7 +1,7 @@
 package com.springboot.hospitalmgmt.HospitalManagement.service;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.Collections;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -19,8 +19,8 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // Prefix with ROLE_ to match Spring’s convention
-        return List.of(new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
+        return Collections.singletonList(
+                new SimpleGrantedAuthority("ROLE_" + user.getRole().name()));
     }
 
     @Override
