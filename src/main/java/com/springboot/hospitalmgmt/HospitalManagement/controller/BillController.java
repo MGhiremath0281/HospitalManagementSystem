@@ -1,23 +1,31 @@
 package com.springboot.hospitalmgmt.HospitalManagement.controller;
 
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillRequestDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.dto.bill.BillResponseDTO;
-import com.springboot.hospitalmgmt.HospitalManagement.dto.patient.PatientResponseDTO;
 import com.springboot.hospitalmgmt.HospitalManagement.models.Bill;
 import com.springboot.hospitalmgmt.HospitalManagement.service.BillService;
 
 import jakarta.validation.Valid;
-import org.springframework.data.domain.Page;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.web.PageableDefault;
-import org.springframework.http.HttpStatus; // Import HttpStatus for 201 response
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/bills")
@@ -28,28 +36,27 @@ public class BillController {
     @Autowired
     private BillService billService;
 
-    // ✅ Create new bill
+    // Only ADMIN can create a bill
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<BillResponseDTO> createBill(@Valid @RequestBody BillRequestDTO billRequestDTO) {
         logger.info("Creating new bill for patient ID: {}", billRequestDTO.getPatientId());
-
         BillResponseDTO responseDTO = billService.createBill(billRequestDTO);
-
         return ResponseEntity.status(HttpStatus.CREATED).body(responseDTO);
     }
 
-
-    // ✅ Get all bills
+    // ADMIN and DOCTOR can view all bills
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping
     public ResponseEntity<Page<BillResponseDTO>> getAllBills(
-            @PageableDefault(size = 10,page = 0)Pageable pageable
-            ) {
+            @PageableDefault(size = 10, page = 0) Pageable pageable) {
         logger.info("Fetching all bills");
         Page<BillResponseDTO> bills = billService.getAllBills(pageable);
         return ResponseEntity.ok(bills);
     }
 
-    // ✅ Get bill by ID
+    // ADMIN and DOCTOR can view bill by ID
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<Bill> getBillById(@PathVariable Long id) {
         logger.info("Fetching bill with ID: {}", id);
@@ -57,7 +64,8 @@ public class BillController {
         return ResponseEntity.ok(bill);
     }
 
-    // ✅ Get bills by patient ID
+    // ADMIN and DOCTOR can view bills by patient ID
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/patient/{patientId}")
     public ResponseEntity<List<Bill>> getBillsByPatientId(@PathVariable Long patientId) {
         logger.info("Fetching bills for patient ID: {}", patientId);
@@ -65,24 +73,20 @@ public class BillController {
         return ResponseEntity.ok(bills);
     }
 
-    // ✅ Update existing bill
-    // Controller Layer
+    // Only ADMIN can update bill
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<BillResponseDTO> updateBill(
-            // Changed return type to DTO
             @PathVariable Long id,
             @Valid @RequestBody BillRequestDTO billRequestDTO) {
 
         logger.info("Updating bill with ID: {}", id);
-
-        // Corrected variable type to match the service return type
         BillResponseDTO updatedBillDTO = billService.updateBill(id, billRequestDTO);
-
-        // Return the DTO in the response body with HTTP 200 OK
         return ResponseEntity.ok(updatedBillDTO);
     }
 
-    // ✅ Delete bill
+    // Only ADMIN can delete bill
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteBill(@PathVariable Long id) {
         logger.info("Deleting bill with ID: {}", id);
