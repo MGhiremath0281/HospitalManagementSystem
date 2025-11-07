@@ -34,41 +34,28 @@ public class AuthController {
     @Autowired
     private JwtUtils jwtUtils;
 
-    /**
-     * Handles patient registration.
-     */
     @PostMapping("/register/patient")
     public ResponseEntity<String> registerPatient(@Valid @RequestBody PatientRegisterDTO dto) {
         String response = authService.registerPatient(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Handles doctor registration.
-     */
     @PostMapping("/register/doctor")
     public ResponseEntity<String> registerDoctor(@Valid @RequestBody DoctorRegisterDTO dto) {
         String response = authService.registerDoctor(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
-    /**
-     * Handles user login and returns a JWT token upon successful authentication.
-     */
     @PostMapping("/login")
     public ResponseEntity<AuthResponseDTO> login(@Valid @RequestBody LoginDTO dto) {
-        // Authenticate user using AuthenticationManager
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(dto.getUsername(), dto.getPassword()));
 
-        // Set authenticated user in SecurityContext
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        // Generate JWT token
         String role = authentication.getAuthorities().iterator().next().getAuthority();
         String token = jwtUtils.generateToken(authentication.getName(), role);
 
-        // Return JWT token in response
         return ResponseEntity.ok(new AuthResponseDTO(token));
     }
 }

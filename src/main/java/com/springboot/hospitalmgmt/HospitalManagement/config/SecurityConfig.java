@@ -32,17 +32,15 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        // Allow registration and login endpoints
                         .requestMatchers("/auth/register/**", "/auth/login").permitAll()
-                        .requestMatchers("/public/**").permitAll()
-                        // Role-based access
+                        .requestMatchers("/public/api/**").permitAll()
+                        .requestMatchers("/api/bills/**").hasAnyRole("ADMIN", "DOCTOR")
+                        .requestMatchers("/api/insurance/**").hasAnyRole("ADMIN", "DOCTOR")
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/doctor/**").hasRole("DOCTOR")
-                        .requestMatchers("/patient/**").hasAnyRole("PATIENT", "ADMIN")
-                        // Any other request requires authentication
+                        .requestMatchers("/doctor/api/**").hasRole("DOCTOR")
+                        .requestMatchers("/patient/api/**").hasAnyRole("PATIENT", "ADMIN")
                         .anyRequest().authenticated());
 
-        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

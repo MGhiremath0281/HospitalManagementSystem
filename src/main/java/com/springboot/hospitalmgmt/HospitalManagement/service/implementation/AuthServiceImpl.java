@@ -35,29 +35,47 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public String registerPatient(PatientRegisterDTO dto) {
-        // Check username
         if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
             throw new RuntimeException("Username already exists");
         }
 
-        // Create User
         User user = new User();
         user.setUsername(dto.getUsername());
         user.setPassword(passwordEncoder.encode(dto.getPassword()));
         user.setRole(Role.PATIENT);
         userRepository.save(user);
 
-        // Create Patient
         Patient patient = new Patient();
         patient.setFullName(dto.getFullName());
         patient.setAge(dto.getAge());
         patient.setGender(dto.getGender());
-        patient.setEmail(dto.getEmail()); // maps to email_address in DB
+        patient.setEmail(dto.getEmail());
         patient.setAdmissionDate(dto.getAdmissionDate());
         patient.setUser(user);
         patientRepository.save(patient);
 
-        return "Patient registered successfully";
+        return "Patient registered successfully with username: " + dto.getUsername();
+    }
+
+    @Override
+    public String registerDoctor(DoctorRegisterDTO dto) {
+        if (userRepository.findByUsername(dto.getUsername()).isPresent()) {
+            throw new RuntimeException("Username already exists");
+        }
+
+        User user = new User();
+        user.setUsername(dto.getUsername());
+        user.setPassword(passwordEncoder.encode(dto.getPassword()));
+        user.setRole(Role.DOCTOR);
+        userRepository.save(user);
+
+        Doctor doctor = new Doctor();
+        doctor.setName(dto.getName());
+        doctor.setSpacility(dto.getSpacility());
+        doctor.setUser(user);
+        doctorRepository.save(doctor);
+
+        return "Doctor registered successfully with username: " + dto.getUsername();
     }
 
     @Override
@@ -67,32 +85,5 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Invalid username or password");
         }
         return "Login successful for user: " + userOpt.get().getUsername();
-    }
-
-    @Override
-    public String registerDoctor(DoctorRegisterDTO dto) {
-        // Generate a unique username for doctor (or add username/password fields in
-        // DTO)
-        String username = dto.getName().toLowerCase().replace(" ", "") + System.currentTimeMillis() % 1000;
-
-        if (userRepository.findByUsername(username).isPresent()) {
-            throw new RuntimeException("Generated username already exists. Try again.");
-        }
-
-        // Create User
-        User user = new User();
-        user.setUsername(username);
-        user.setPassword(passwordEncoder.encode("default123")); // default password
-        user.setRole(Role.DOCTOR);
-        userRepository.save(user);
-
-        // Create Doctor
-        Doctor doctor = new Doctor();
-        doctor.setName(dto.getName());
-        doctor.setSpacility(dto.getSpacility());
-        doctor.setUser(user);
-        doctorRepository.save(doctor);
-
-        return "Doctor registered successfully with username: " + username + " and default password: default123";
     }
 }

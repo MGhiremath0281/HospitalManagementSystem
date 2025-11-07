@@ -9,5 +9,5 @@ public interface AuthService {
 
     String registerDoctor(DoctorRegisterDTO dto);
 
-    String login(LoginDTO dto); // For now, return simple success/failure
+    String login(LoginDTO dto);
 }

@@ -3,6 +3,7 @@ package com.springboot.hospitalmgmt.HospitalManagement.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,14 +26,16 @@ public class DocterController {
     @Autowired
     private DocterService docterService;
 
-    // Create doctor
+    // Only ADMIN can create doctor
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<Doctor> createDocter(@Valid @RequestBody Doctor doctor) {
         Doctor savedDoctor = docterService.createDocter(doctor);
         return ResponseEntity.ok(savedDoctor);
     }
 
-    // Get all docters with pagination
+    // ADMIN and DOCTOR can view all doctors
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping
     public ResponseEntity<Page<Doctor>> getAllDocters(
             @RequestParam(defaultValue = "0") int page,
@@ -42,7 +45,8 @@ public class DocterController {
         return ResponseEntity.ok(docters);
     }
 
-    // Get docter by id
+    // ADMIN and DOCTOR can view doctor by ID
+    @PreAuthorize("hasAnyRole('ADMIN','DOCTOR')")
     @GetMapping("/{id}")
     public ResponseEntity<?> getDocterById(@PathVariable Long id) {
         return docterService.getDocterById(id)
@@ -50,7 +54,8 @@ public class DocterController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    // Update docter
+    // Only ADMIN can update doctor
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<?> updateDocter(@PathVariable Long id, @Valid @RequestBody Doctor doctor) {
         Doctor updatedDoctor = docterService.updateDocter(id, doctor);
@@ -61,7 +66,8 @@ public class DocterController {
         return ResponseEntity.ok(updatedDoctor);
     }
 
-    // Delete docter
+    // Only ADMIN can delete doctor
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteDocter(@PathVariable Long id) {
         docterService.deleteDocter(id);

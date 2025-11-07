@@ -14,7 +14,6 @@ import jakarta.persistence.ManyToMany;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OneToOne;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -33,17 +32,15 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // FIX: Corrected the typo 'ne' to 'be' in the message, as requested.
     @NotBlank(message = "Name can't be empty")
-    @Size(min = 2, max = 30, message = "Enter the name between 2 to 30 characters")
     private String name;
 
-    // Retained the custom spelling 'spacility' and its message.
-    @NotBlank(message = "Specility cant be empty")
+    @NotBlank(message = "Speciality can't be empty")
     private String spacility;
 
-    @OneToOne
-    @JoinColumn(name = "user_id")
+    // Link to user credentials
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     // *** FIX FOR ERROR: MappedBy corrected to "doctor" (singular) ***
