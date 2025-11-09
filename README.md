@@ -99,7 +99,7 @@ This project demonstrates secure, scalable, and maintainable backend design usin
 ## Contributing
 
 Contributions are welcome!
-To contribute:
+To contribute:-
 
 1. Fork this repo
 2. Create a new branch (`feature/your-feature-name`)
